@@ -1,3 +1,5 @@
+import 'package:flutter/cupertino.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -14,6 +16,7 @@ import 'explanation_screen.dart';
 import 'get_affliaiate_links_screen.dart';
 import 'get_started_screen.dart';
 import 'my_shopping_army_screen.dart';
+import 'package:intl/intl.dart';
 
 class MyHomePage extends StatefulWidget {
   MyHomePage({Key? key}) : super(key: key);
@@ -74,8 +77,15 @@ class _MyHomePageState extends State<MyHomePage> {
 
   @override
   void initState() {
-    // _createBottomBannerAd();
+    if (!kIsWeb) _createBottomBannerAd();
     super.initState();
+  }
+
+  @override
+  void didChangeDependencies() {
+    // TODO: implement didChangeDependencies
+    super.didChangeDependencies();
+    getUpdateStatus();
   }
 
   void dispose() {
@@ -223,11 +233,27 @@ class _MyHomePageState extends State<MyHomePage> {
                       padding: const EdgeInsets.all(8.0),
                       child: CustomCard(
                         onTap: () async {
-                          if (carddetailList[index].isLink != null) {
-                            if (carddetailList[index].link != null) {
-                              Uri _uri = Uri.parse(carddetailList[index].link!);
-                              print("Button press");
-                              _launchUrl(_uri);
+                          if (kIsWeb) {
+                            // if (kIsWeb) {
+                            if (carddetailList[index].isLink != null) {
+                              if (carddetailList[index].link != null) {
+                                Uri _uri =
+                                    Uri.parse(carddetailList[index].link!);
+                                print("Button press");
+                                _launchUrl(_uri);
+                              }
+                            }
+                            // }
+                            else {
+                              await Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                          builder: (_) =>
+                                              carddetailList[index].screen))
+                                  .then((value) {
+                                print("done");
+                                setState(() {});
+                              });
                             }
                           } else {
                             await Navigator.push(
@@ -267,6 +293,37 @@ class _MyHomePageState extends State<MyHomePage> {
             ],
           ),
         ),
+      ),
+    );
+  }
+
+  getUpdateStatus() async {
+    preferences = await SharedPreferences.getInstance();
+    String getNextMonthDate = preferences.getString("NextDate")!;
+    if (getNextMonthDate == DateFormat.yMMMMEEEEd().format(DateTime.now())) {
+      showCustomErrorDialog(text: "Please update your app", title: "Message");
+    } else {
+      print("Not need to update");
+    }
+  }
+
+  showCustomErrorDialog({
+    required String title,
+    required String text,
+  }) async {
+    return showCupertinoDialog(
+      context: context,
+      builder: (context) => CupertinoAlertDialog(
+        title: Text(title),
+        content: Text(text),
+        actions: <Widget>[
+          CupertinoDialogAction(
+            child: Text('OK'),
+            onPressed: () async {
+              Navigator.pop(context);
+            },
+          ),
+        ],
       ),
     );
   }

@@ -24,8 +24,6 @@ class _PromoteProductState extends State<PromoteProduct> {
   List<Contact>? _contacts;
   List<String> _addContacts = [];
   bool _permissionDenied = false;
-  // target
-  // walmart
 
   TextEditingController message = TextEditingController();
   bool isAmazon = false;
@@ -50,6 +48,7 @@ class _PromoteProductState extends State<PromoteProduct> {
   Future _fetchContacts() async {
     if (!await FlutterContacts.requestPermission(readonly: true)) {
       setState(() => _permissionDenied = true);
+      _contacts = [];
     } else {
       final contacts = await FlutterContacts.getContacts(
           withProperties: true, withAccounts: true, withPhoto: true);
@@ -103,7 +102,7 @@ class _PromoteProductState extends State<PromoteProduct> {
                         setState(() {});
                       }),
                   checkBox(
-                    title: "Welmart",
+                    title: "Walmart",
                     selected: iswelmart,
                     onChanged: (value) {
                       if (walmartMessage != null) {
@@ -202,15 +201,51 @@ class _PromoteProductState extends State<PromoteProduct> {
               const SizedBox(
                 height: 20,
               ),
-              CustomButton(
-                onTap: () async {
-                  if (message.text.isNotEmpty) {
-                    Clipboard.setData(ClipboardData(text: message.text));
-                    // showInSnackBar("Message save");
-                  }
-                },
-                text: "Copy Message",
-              ),
+              if (kIsWeb)
+                CustomButton(
+                  onTap: () async {
+                    if (message.text.isNotEmpty) {
+                      linkSave("Copied");
+                      Clipboard.setData(ClipboardData(text: message.text));
+                    } else {
+                      linkSave("Please write a message");
+                    }
+                  },
+                  text: "Copy Message",
+                ),
+              if (!kIsWeb)
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceAround,
+                  children: [
+                    SizedBox(
+                      width: MediaQuery.of(context).size.width * 0.43,
+                      child: CustomButton(
+                        onTap: () async {
+                          if (message.text.isNotEmpty) {
+                            await _sendSMS(
+                                message: message.text, recipents: _addContacts);
+                          } else {
+                            linkSave("Please write a message");
+                          }
+                        },
+                        text: "Text",
+                      ),
+                    ),
+                    SizedBox(
+                      width: MediaQuery.of(context).size.width * 0.43,
+                      child: CustomButton(
+                        onTap: () async {
+                          if (message.text.isNotEmpty) {
+                            launchEmail(message.text);
+                          } else {
+                            linkSave("Please write a message");
+                          }
+                        },
+                        text: "Email",
+                      ),
+                    ),
+                  ],
+                ),
               const SizedBox(
                 height: 20,
               ),
@@ -247,6 +282,25 @@ class _PromoteProductState extends State<PromoteProduct> {
     );
   }
 
+  void linkSave(String text) {
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+      content: Text(text),
+    ));
+  }
+
+  launchEmail(String message) async {
+    // ios specification
+    final String subject = "Subject:";
+    final String stringText = message;
+    String uri =
+        'mailto:?subject=${Uri.encodeComponent(subject)}&body=${Uri.encodeComponent(stringText)}';
+    if (await canLaunch(uri)) {
+      await launch(uri);
+    } else {
+      print("No email client found");
+    }
+  }
+
   void showInSnackBar(String value) {
     Scaffold.of(context).showSnackBar(new SnackBar(content: new Text(value)));
   }
@@ -254,6 +308,19 @@ class _PromoteProductState extends State<PromoteProduct> {
   Future<void> _launchUrl(Uri _url) async {
     if (!await launchUrl(_url)) {
       throw 'Could not launch $_url';
+    }
+  }
+
+  void launchEmailSubmission() async {
+    final Uri params = Uri(
+      scheme: 'mailto',
+      path: 'nabeelyousaf1995@gmail.com',
+    );
+    String url = params.toString();
+    if (await canLaunch(url)) {
+      await launch(url);
+    } else {
+      print('Could not launch $url');
     }
   }
 

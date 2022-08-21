@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:whatbill/screens/terms_condition_screen.dart';
+// ignore: depend_on_referenced_packages
+import 'package:intl/intl.dart';
 
 import 'home.dart';
+import 'terms_condition_screen.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({Key? key}) : super(key: key);
@@ -19,24 +21,34 @@ class _SplashScreenState extends State<SplashScreen> {
   }
 
   void viewFunction() async {
-    SharedPreferences preferences = await SharedPreferences.getInstance();
+    DateTime currentDate = DateTime.now();
 
+    SharedPreferences preferences = await SharedPreferences.getInstance();
     bool? agreement = preferences.getBool("agreement");
     if (agreement != null) {
       agreement = true;
     } else {
+      String format =
+          DateFormat.yMMMMEEEEd().format(currentDate.add(Duration(days: 30)));
+      preferences
+          .setString("NextDate", format)
+          .then((value) => print("Save date"));
+
+      print(format);
+
       agreement = false;
     }
 
     Future.delayed(
-        const Duration(seconds: 2),
-        () => Navigator.pushAndRemoveUntil(
-            context,
-            MaterialPageRoute(
-                builder: (context) => agreement == true
-                    ? MyHomePage()
-                    : const TermConditionScreen()),
-            (route) => true));
+      const Duration(seconds: 2),
+      () => Navigator.pushAndRemoveUntil(
+        context,
+        MaterialPageRoute(
+            builder: (context) =>
+                agreement == true ? MyHomePage() : const TermConditionScreen()),
+        (route) => false,
+      ),
+    );
   }
 
   @override

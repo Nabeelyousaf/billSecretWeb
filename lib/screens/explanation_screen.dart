@@ -104,6 +104,7 @@ class _CustomVideoPlayerState extends State<CustomVideoPlayer> {
             color: Colors.black,
           ),
           onPressed: () {
+            dispose();
             Navigator.pop(context);
           },
         ),

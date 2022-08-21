@@ -66,6 +66,7 @@ class _SupportScreenState extends State<SupportScreen> {
     if (target2 != null) targetlink2.text = target2!;
     if (target3 != null) targetlink3.text = target3!;
     if (target4 != null) targetlink4.text = target4!;
+    setState(() {});
   }
 
   @override
@@ -207,6 +208,7 @@ class _SupportScreenState extends State<SupportScreen> {
                         if (amazon1 != amazonlink1.text) {
                           preferences.setString("amazon1", amazonlink1.text);
                           linkSave();
+                          getdata();
                           FocusScope.of(context).unfocus();
                         }
                       }
@@ -323,6 +325,7 @@ class _SupportScreenState extends State<SupportScreen> {
                         if (walmart1 != walmartlink1.text) {
                           preferences.setString("walmart1", walmartlink1.text);
                           linkSave();
+                          getdata();
                           FocusScope.of(context).unfocus();
                         }
                       }
@@ -438,6 +441,7 @@ class _SupportScreenState extends State<SupportScreen> {
                         if (target1 != targetlink1.text) {
                           preferences.setString("target1", targetlink1.text);
                           linkSave();
+                          getdata();
                           FocusScope.of(context).unfocus();
                         }
                       }

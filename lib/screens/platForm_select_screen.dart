@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -23,9 +24,9 @@ class _PlatformSelectionScreenState extends State<PlatformSelectionScreen> {
   bool isAmazon = true;
   bool iswelmart = false;
   bool isTarget = false;
-  String myAmazonLink = "https://amzn.to/3zOoTqB";
-  String mywalmertLink = "http://walmart.com";
-  String myTargetLink = "http://target.com";
+  String myAmazonLink = "https://amzn.to/3AvWki6";
+  String mywalmertLink = "https://walmart.com";
+  String myTargetLink = "https://target.com";
   List<String> amazonLinkList = [];
   List<String> targetLinkList = [];
   List<String> walmartLinkList = [];
@@ -92,7 +93,7 @@ class _PlatformSelectionScreenState extends State<PlatformSelectionScreen> {
               height: 30,
             ),
             CustomButton(
-              text: "Walmert",
+              text: "Walmart",
               onTap: () {
                 _url = Uri.parse("https://affiliates.walmart.com/");
                 widget.isCheckScreen == true
@@ -120,8 +121,15 @@ class _PlatformSelectionScreenState extends State<PlatformSelectionScreen> {
     );
   }
 
-  linkOpen(String url) async {
+  defultLinkOpen(String url) async {
     _url = Uri.parse(url);
+    if (_url != null) {
+      await _launchUrl(_url!);
+    }
+  }
+
+  linkOpen(String url) async {
+    _url = Uri.parse("https://" + url);
     if (_url != null) {
       await _launchUrl(_url!);
     }
@@ -175,7 +183,7 @@ class _PlatformSelectionScreenState extends State<PlatformSelectionScreen> {
             index = index + 1;
             preferences.setInt(getInt, index);
           } else {
-            linkOpen(defultLink);
+            defultLinkOpen(defultLink);
             preferences.setInt(getInt, 0);
           }
         } else if (list.length == 2) {
@@ -188,7 +196,7 @@ class _PlatformSelectionScreenState extends State<PlatformSelectionScreen> {
             index = index + 1;
             preferences.setInt(getInt, index);
           } else {
-            linkOpen(defultLink);
+            defultLinkOpen(defultLink);
             preferences.setInt(getInt, 0);
           }
         } else if (list.length == 3) {
@@ -205,7 +213,7 @@ class _PlatformSelectionScreenState extends State<PlatformSelectionScreen> {
             linkOpen(list[0]);
             index = index + 1;
           } else {
-            linkOpen(defultLink);
+            defultLinkOpen(defultLink);
             index = 0;
           }
 
@@ -225,13 +233,13 @@ class _PlatformSelectionScreenState extends State<PlatformSelectionScreen> {
               linkOpen(list[3]);
               index = index + 1;
             } else {
-              linkOpen(defultLink);
+              defultLinkOpen(defultLink);
               index = 0;
             }
 
             await preferences.setInt(getInt, index);
           } else {
-            linkOpen(defultLink);
+            defultLinkOpen(defultLink);
             await preferences.setInt(getInt, 0);
           }
         }
@@ -240,7 +248,7 @@ class _PlatformSelectionScreenState extends State<PlatformSelectionScreen> {
         preferences.setInt(getInt, 1);
       }
     } else {
-      linkOpen(defultLink);
+      defultLinkOpen(defultLink);
     }
   }
 
@@ -251,9 +259,37 @@ class _PlatformSelectionScreenState extends State<PlatformSelectionScreen> {
   }
 
   Future<void> _launchUrl(Uri url) async {
-    if (!await launchUrl(url)) {
-      linkSave("Could not launch  $url");
-      throw 'Could not launch $url';
+    try {
+      if (!await launchUrl(url)) {
+        linkSave("Could not launch  $url");
+
+        throw 'Could not launch $url';
+      }
+    } catch (e) {
+      showCustomErrorDialog(
+          context: context, text: "Something went wrong", title: "Message");
     }
+  }
+
+  showCustomErrorDialog({
+    required String title,
+    required String text,
+    required BuildContext context,
+  }) async {
+    return showCupertinoDialog(
+      context: context,
+      builder: (context) => CupertinoAlertDialog(
+        title: Text(title),
+        content: Text(text),
+        actions: <Widget>[
+          CupertinoDialogAction(
+            child: Text('OK'),
+            onPressed: () async {
+              Navigator.pop(context);
+            },
+          ),
+        ],
+      ),
+    );
   }
 }

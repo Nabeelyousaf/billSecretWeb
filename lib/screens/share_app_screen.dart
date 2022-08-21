@@ -7,7 +7,6 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:whatbill/screens/promote_product_screen.dart';
 import 'package:whatbill/utils/color_constant.dart';
-
 import '../widgets/customButton.dart';
 
 class ShareAppScreen extends StatefulWidget {
@@ -158,15 +157,52 @@ class _ShareAppScreenState extends State<ShareAppScreen> {
             const SizedBox(
               height: 20,
             ),
-            CustomButton(
-              onTap: () async {
-                if (controller.text.isNotEmpty) {
-                  Clipboard.setData(ClipboardData(text: controller.text));
-                  // showInSnackBar("Message save");
-                }
-              },
-              text: "Copy Message",
-            ),
+            if (kIsWeb)
+              CustomButton(
+                onTap: () async {
+                  if (controller.text.isNotEmpty) {
+                    linkSave("Copied");
+                    Clipboard.setData(ClipboardData(text: controller.text));
+                  } else {
+                    linkSave("Please write a message");
+                  }
+                },
+                text: "Copy Message",
+              ),
+            if (!kIsWeb)
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceAround,
+                children: [
+                  SizedBox(
+                    width: MediaQuery.of(context).size.width * 0.43,
+                    child: CustomButton(
+                      onTap: () async {
+                        if (controller.text.isNotEmpty) {
+                          if (controller.text.isNotEmpty) {
+                            await _sendSMS(
+                                message: controller.text,
+                                recipents: _addContacts);
+                          }
+                        }
+                      },
+                      text: "Text",
+                    ),
+                  ),
+                  SizedBox(
+                    width: MediaQuery.of(context).size.width * 0.43,
+                    child: CustomButton(
+                      onTap: () async {
+                        if (controller.text.isNotEmpty) {
+                          launchEmail(controller.text);
+                        } else {
+                          linkSave("Please write a message");
+                        }
+                      },
+                      text: "Email",
+                    ),
+                  ),
+                ],
+              ),
             const SizedBox(
               height: 20,
             ),
@@ -206,6 +242,25 @@ class _ShareAppScreenState extends State<ShareAppScreen> {
         ),
       ),
     );
+  }
+
+  void linkSave(String text) {
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+      content: Text(text),
+    ));
+  }
+
+  launchEmail(String message) async {
+    // ios specification
+    final String subject = "Subject:";
+    final String stringText = message;
+    String uri =
+        'mailto:?subject=${Uri.encodeComponent(subject)}&body=${Uri.encodeComponent(stringText)}';
+    if (await canLaunch(uri)) {
+      await launch(uri);
+    } else {
+      print("No email client found");
+    }
   }
 
   void showInSnackBar(String value) {

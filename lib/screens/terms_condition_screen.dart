@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../utils/color_constant.dart';
@@ -721,17 +722,34 @@ class TermConditionScreen extends StatelessWidget {
               const SizedBox(
                 height: 20,
               ),
-              CustomButton(
-                text: "Agree",
-                onTap: () async {
-                  SharedPreferences pref =
-                      await SharedPreferences.getInstance();
-                  pref.setBool("agreement", true);
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceAround,
+                children: [
+                  SizedBox(
+                    width: MediaQuery.of(context).size.width * 0.45,
+                    child: CustomButton(
+                      text: "Agree",
+                      onTap: () async {
+                        SharedPreferences pref =
+                            await SharedPreferences.getInstance();
+                        pref.setBool("agreement", true);
 
-                  // ignore: use_build_context_synchronously
-                  Navigator.push(
-                      context, MaterialPageRoute(builder: (_) => MyHomePage()));
-                },
+                        // ignore: use_build_context_synchronously
+                        Navigator.push(context,
+                            MaterialPageRoute(builder: (_) => MyHomePage()));
+                      },
+                    ),
+                  ),
+                  SizedBox(
+                    width: MediaQuery.of(context).size.width * 0.45,
+                    child: CustomButton(
+                      text: "Disagree",
+                      onTap: () {
+                        SystemNavigator.pop();
+                      },
+                    ),
+                  )
+                ],
               )
             ],
           ),
